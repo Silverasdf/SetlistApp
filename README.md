@@ -11,7 +11,7 @@ conda env create -f environment.yml
 conda activate setlistapp
 ```
 
-Otherwise, you can download python and download the necessary requirements from the requirements.txt file.
+Otherwise, you can download python and download the necessary requirements from the requirements.txt file with pip <https://packaging.python.org/en/latest/tutorials/installing-packages/>.
 
 ## src
 

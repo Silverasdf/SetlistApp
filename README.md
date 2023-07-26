@@ -11,6 +11,8 @@ conda env create -f environment.yml
 conda activate setlistapp
 ```
 
+Otherwise, you can download python and download the necessary requirements from the requirements.txt file.
+
 ## src
 
 format_csv.py: This file is used to format the csv file that is used to generate the setlist. It is not necessary to run this file if the csv file is already formatted.

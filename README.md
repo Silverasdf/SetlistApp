@@ -16,7 +16,8 @@ Otherwise, you can download python and download the necessary requirements from 
 ## src
 
 format_csv.py: This file is used to format the csv file that is used to generate the setlist. It is not necessary to run this file if the csv file is already formatted.
-setlist_make_gui.py: This file is used to generate the setlist. It is the main file that should be run.
+setlist_math.py: This file contains the math part of the project. It is used to generate the setlist.
+gui.py: This file contains the gui part of the project. It is also the main file that should be run.
 
 ## Usage
 

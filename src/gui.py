@@ -9,7 +9,7 @@ import warnings
 import numpy as np
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QTextEdit, QVBoxLayout, QTabWidget, QHBoxLayout
-from setlist_math import make_setlist, sort_sample_into_clusters, write_setlist_to_file
+from setlist_math import *
 
 def browse_input_file(input_file_entry):
     file_path, _ = QFileDialog.getOpenFileName(None, "Select Songs File", "", "CSV Files (*.csv);;All Files (*)")
@@ -19,7 +19,7 @@ def browse_output_file(output_file_entry):
     file_path, _ = QFileDialog.getSaveFileName(None, "Save Setlist File", "", "Text Files (*.txt);;All Files (*)")
     output_file_entry.setText(file_path)
 
-def run_program(input_file_entry, output_file_entry, og_weight_entry, mood_weight_entry, includes_entry, set_time_entry, transition_time_entry, cluster_size_entry, setlist_generated_text):
+def run_function(input_file_entry, output_file_entry, og_weight_entry, mood_weight_entry, includes_entry, set_time_entry, transition_time_entry, cluster_size_entry, setlist_generated_text, setlist_text):
     # Get user inputs
     song_file = input_file_entry.text()
     setlist_file = output_file_entry.text()
@@ -38,12 +38,18 @@ def run_program(input_file_entry, output_file_entry, og_weight_entry, mood_weigh
         warnings.filterwarnings("ignore")
         setlist = make_setlist(songs, target_time=set_time-transition_time, og_weight=og_weight, mood_weight=mood_weight, includes=includes)
         sorted_clusters = sort_sample_into_clusters(setlist, cluster_size=cluster_size)
-        write_setlist_to_file(sorted_clusters, setlist_file)
+        setlist_string = write_setlist_to_string(sorted_clusters)
         setlist_generated_text.clear()  # Clear previous message
         setlist_generated_text.append("Setlist generated!")
+        setlist_text.clear() #Update setlist text
+        setlist_text.append(setlist_string)
     except Exception as e:
         setlist_generated_text.clear()  # Clear previous message
         setlist_generated_text.append(f"Error: {e}!")
+
+def run_active_songs(df):
+    show_active_songs(df)
+
 
 def init_gui():
     app = QApplication(sys.argv)
@@ -107,7 +113,7 @@ def init_gui():
 
     # Run Button
     run_button = QPushButton("Run")
-    run_button.clicked.connect(lambda: run_program(input_file_entry, output_file_entry, og_weight_entry, mood_weight_entry, includes_entry, set_time_entry, transition_time_entry, cluster_size_entry, setlist_generated_text))
+    run_button.clicked.connect(lambda: run_function(input_file_entry, output_file_entry, og_weight_entry, mood_weight_entry, includes_entry, set_time_entry, transition_time_entry, cluster_size_entry, setlist_generated_text, setlist_text))
 
     # Setlist Generated Message
     setlist_generated_text = QTextEdit()
@@ -151,10 +157,18 @@ def init_gui():
 
     tab1.setLayout(tab1_layout)
 
-    # Tab 2: Show Active Songs
+    # Tab 2: Setlist
     tab2 = QWidget()
-    tab_widget.addTab(tab2, "Show Active Songs")
-    # Add content for the second tab (Show Active Songs) here
+    tab_widget.addTab(tab2, "Setlist")
+
+    # Setlist Text
+    setlist_text = QTextEdit()
+    setlist_text.setReadOnly(True)
+
+    # Layout for Tab 2
+    tab2_layout = QVBoxLayout()
+    tab2_layout.addWidget(setlist_text)
+    tab2.setLayout(tab2_layout)
 
     # Show the main window
     window.show()

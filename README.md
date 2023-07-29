@@ -4,14 +4,26 @@ This app was mainly just used to help my bands generate setlists, given a proper
 
 ## Installation
 
-It is recommended you use conda to install the dependencies for this project. To do so, run the following command:
+I have 2 different options for installation. The first is using Python and Pip, and the second is using Conda. I personally use Conda, but I have included the Python and Pip option for my bandmates. If you have any issues, please contact me.
+
+### Python and Pip (recommended for my bandmates)
+
+All you need to do is download Python 3.10.9 or 3.11.4 (I've tested on only these versions, but I'm sure it will work with others), and then download the requirements.txt file. Then, run the following command:
+
+```bash
+pip install -r requirements.txt
+```
+
+The command above will install all the necessary dependencies for the project. However, if this does not work, seek this guide (or contact me). <https://packaging.python.org/en/latest/tutorials/installing-packages/>.
+
+### Conda
+
+I personally use a conda virtual environment, so I have exported my environment in a .yml file. To create this environment, make sure you have conda installed and then run the following command:
 
 ```bash
 conda env create -f environment.yml
 conda activate setlistapp
 ```
-
-Otherwise, you can download python and download the necessary requirements from the requirements.txt file with pip <https://packaging.python.org/en/latest/tutorials/installing-packages/>.
 
 ## src
 

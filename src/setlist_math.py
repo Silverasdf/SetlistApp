@@ -151,3 +151,10 @@ def write_setlist_to_file(setlist, output_file):
 
             # Write the song name to the file
             file.write(song_name + '\n')
+
+def show_active_songs(df):
+    songs = []
+    df = df[df['Active'] == True]
+    for i, song in df.iterrows():
+        songs.append(song['Song'])
+    return songs

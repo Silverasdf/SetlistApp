@@ -7,21 +7,30 @@ import pandas as pd
 import random
 import warnings
 import numpy as np
-import tkinter as tk
-from tkinter import filedialog
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QTextEdit, QVBoxLayout, QTabWidget, QHBoxLayout
 from setlist_math import make_setlist, sort_sample_into_clusters, write_setlist_to_file
 
-def run_program():
-    # Get the input values
-    song_file = input_file_entry.get()
-    setlist_file = output_file_entry.get()
-    og_weight = float(og_weight_entry.get() or 1.2)
-    mood_weight = float(mood_weight_entry.get() or 0.8)
-    includes = includes_entry.get().split(",")
-    set_time = float(set_time_entry.get() or 60)  # Set time in minutes
-    transition_time = float(transition_time_entry.get() or set_time * 0.1)  # Transition time in minutes (10% of set time)
-    cluster_size = int(cluster_size_entry.get() or 2)  # Cluster size
+def browse_input_file(input_file_entry):
+    file_path, _ = QFileDialog.getOpenFileName(None, "Select Songs File", "", "CSV Files (*.csv);;All Files (*)")
+    input_file_entry.setText(file_path)
 
+def browse_output_file(output_file_entry):
+    file_path, _ = QFileDialog.getSaveFileName(None, "Save Setlist File", "", "Text Files (*.txt);;All Files (*)")
+    output_file_entry.setText(file_path)
+
+def run_program(input_file_entry, output_file_entry, og_weight_entry, mood_weight_entry, includes_entry, set_time_entry, transition_time_entry, cluster_size_entry, setlist_generated_text):
+    # Get user inputs
+    song_file = input_file_entry.text()
+    setlist_file = output_file_entry.text()
+    og_weight = float(og_weight_entry.text() or 1.0)  # Default value if no input
+    mood_weight = float(mood_weight_entry.text() or 1.0)  # Default value if no input
+    includes = includes_entry.text().split(",")
+    set_time = float(set_time_entry.text() or 60.0)  # Default value if no input
+    transition_time = float(transition_time_entry.text() or 5.0)  # Default value if no input
+    cluster_size = int(cluster_size_entry.text() or 5)  # Default value if no input
+    
+    # Rest of the code goes here
     # Main code
     try:
         songs = pd.read_csv(song_file)
@@ -30,79 +39,127 @@ def run_program():
         setlist = make_setlist(songs, target_time=set_time-transition_time, og_weight=og_weight, mood_weight=mood_weight, includes=includes)
         sorted_clusters = sort_sample_into_clusters(setlist, cluster_size=cluster_size)
         write_setlist_to_file(sorted_clusters, setlist_file)
-        setlist_generated_text.delete("1.0", tk.END)  # Clear previous message
-        setlist_generated_text.insert(tk.END, "Setlist generated!")
+        setlist_generated_text.clear()  # Clear previous message
+        setlist_generated_text.append("Setlist generated!")
     except Exception as e:
-        setlist_generated_text.delete("1.0", tk.END)
-        setlist_generated_text.insert(tk.END, f"Error: {e}")
+        setlist_generated_text.clear()  # Clear previous message
+        setlist_generated_text.append(f"Error: {e}!")
 
+def init_gui():
+    app = QApplication(sys.argv)
+    window = QMainWindow()
+    window.setWindowTitle("Setlist Generator")
 
-# Create the GUI window
-window = tk.Tk()
-window.title("Setlist Generator")
+    # Create a central widget
+    central_widget = QWidget()
+    window.setCentralWidget(central_widget)
 
-# Input File Path
-input_file_label = tk.Label(window, text="Input File Path:")
-input_file_label.pack()
-input_file_entry = tk.Entry(window)
-input_file_entry.pack()
-input_file_button = tk.Button(window, text="Browse", command=lambda: input_file_entry.insert(tk.END, filedialog.askopenfilename()))
-input_file_button.pack()
+    # Create a tab widget
+    tab_widget = QTabWidget()
+    central_layout = QVBoxLayout()
+    central_layout.addWidget(tab_widget)
+    central_widget.setLayout(central_layout)
 
-# Output File Path
-output_file_label = tk.Label(window, text="Output File Path:")
-output_file_label.pack()
-output_file_entry = tk.Entry(window)
-output_file_entry.pack()
-output_file_button = tk.Button(window, text="Browse", command=lambda: output_file_entry.insert(tk.END, filedialog.asksaveasfilename()))
-output_file_button.pack()
+    # Tab 1: Make Setlist
+    tab1 = QWidget()
+    tab_widget.addTab(tab1, "Make Setlist")
 
-# OG Weight
-og_weight_label = tk.Label(window, text="OG Weight (default 1.2):")
-og_weight_label.pack()
-og_weight_entry = tk.Entry(window)
-og_weight_entry.pack()
+    # Input File Path
+    input_file_label = QLabel("Input File Path:")
+    input_file_entry = QLineEdit()
+    browse_input_button = QPushButton("Browse")
+    browse_input_button.clicked.connect(lambda: browse_input_file(input_file_entry))
 
-# Mood Weight
-mood_weight_label = tk.Label(window, text="Mood Weight (default 0.8):")
-mood_weight_label.pack()
-mood_weight_entry = tk.Entry(window)
-mood_weight_entry.pack()
+    # Output File Path
+    output_file_label = QLabel("Output File Path:")
+    output_file_entry = QLineEdit()
+    browse_output_button = QPushButton("Browse")
+    browse_output_button.clicked.connect(lambda: browse_output_file(output_file_entry))
 
-# Includes
-includes_label = tk.Label(window, text="Includes (comma-separated):")
-includes_label.pack()
-includes_entry = tk.Entry(window)
-includes_entry.pack()
+    # OG Weight
+    og_weight_label = QLabel("OG Weight (default: 1.0):")
+    og_weight_entry = QLineEdit()
+    og_weight_entry.setText("1.0")
 
-# Set Time
-set_time_label = tk.Label(window, text="Set Time (minutes) (default 60):")
-set_time_label.pack()
-set_time_entry = tk.Entry(window)
-set_time_entry.pack()
+    # Mood Weight
+    mood_weight_label = QLabel("Mood Weight (default: 1.0):")
+    mood_weight_entry = QLineEdit()
+    mood_weight_entry.setText("1.0")
 
-# Transition Time
-transition_time_label = tk.Label(window, text="Transition Time (minutes) (default: 10% of set time):")
-transition_time_label.pack()
-transition_time_entry = tk.Entry(window)
-transition_time_entry.pack()
+    # Includes
+    includes_label = QLabel("Includes (comma-separated):")
+    includes_entry = QLineEdit()
 
-# Cluster Size
-cluster_size_label = tk.Label(window, text="Cluster Size (default 2):")
-cluster_size_label.pack()
-cluster_size_entry = tk.Entry(window)
-cluster_size_entry.pack()
+    # Set Time
+    set_time_label = QLabel("Set Time (minutes, default: 60.0):")
+    set_time_entry = QLineEdit()
+    set_time_entry.setText("60.0")
 
-# Run Button
-run_button = tk.Button(window, text="Run", command=run_program)
-run_button.pack()
+    # Transition Time
+    transition_time_label = QLabel("Transition Time (minutes, default: 5.0):")
+    transition_time_entry = QLineEdit()
+    transition_time_entry.setText("5.0")
 
-# Setlist Generated Message
-setlist_generated_text = tk.Text(window, height=1, width=30)
-setlist_generated_text.pack()
+    # Cluster Size
+    cluster_size_label = QLabel("Cluster Size (default: 5):")
+    cluster_size_entry = QLineEdit()
+    cluster_size_entry.setText("5")
 
-# Start the GUI event loop
-window.mainloop()
+    # Run Button
+    run_button = QPushButton("Run")
+    run_button.clicked.connect(lambda: run_program(input_file_entry, output_file_entry, og_weight_entry, mood_weight_entry, includes_entry, set_time_entry, transition_time_entry, cluster_size_entry, setlist_generated_text))
 
-if __name__ == '__main__':
-    run_program()
+    # Setlist Generated Message
+    setlist_generated_text = QTextEdit()
+    setlist_generated_text.setReadOnly(True)
+
+    # Layout for Tab 1
+    tab1_layout = QVBoxLayout()
+    input_layout = QHBoxLayout()
+    input_layout.addWidget(input_file_label)
+    input_layout.addWidget(input_file_entry)
+    input_layout.addWidget(browse_input_button)
+    tab1_layout.addLayout(input_layout)
+
+    output_layout = QHBoxLayout()
+    output_layout.addWidget(output_file_label)
+    output_layout.addWidget(output_file_entry)
+    output_layout.addWidget(browse_output_button)
+    tab1_layout.addLayout(output_layout)
+
+    tab1_layout.addWidget(og_weight_label)
+    tab1_layout.addWidget(og_weight_entry)
+
+    tab1_layout.addWidget(mood_weight_label)
+    tab1_layout.addWidget(mood_weight_entry)
+
+    tab1_layout.addWidget(includes_label)
+    tab1_layout.addWidget(includes_entry)
+
+    tab1_layout.addWidget(set_time_label)
+    tab1_layout.addWidget(set_time_entry)
+
+    tab1_layout.addWidget(transition_time_label)
+    tab1_layout.addWidget(transition_time_entry)
+
+    tab1_layout.addWidget(cluster_size_label)
+    tab1_layout.addWidget(cluster_size_entry)
+
+    tab1_layout.addWidget(run_button)
+
+    tab1_layout.addWidget(setlist_generated_text)
+
+    tab1.setLayout(tab1_layout)
+
+    # Tab 2: Show Active Songs
+    tab2 = QWidget()
+    tab_widget.addTab(tab2, "Show Active Songs")
+    # Add content for the second tab (Show Active Songs) here
+
+    # Show the main window
+    window.show()
+
+    sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    init_gui()

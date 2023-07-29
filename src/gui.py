@@ -11,15 +11,13 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QTextEdit, QVBoxLayout, QTabWidget, QHBoxLayout
 from setlist_math import *
 
-import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QTextEdit, QVBoxLayout, QTabWidget, QHBoxLayout
-
 class SetlistGeneratorWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.output_file_path = ""
 
         self.setWindowTitle("Setlist Generator")
+        self.defaults = dict(og_weight=1.2, mood_weight=0.8, set_time=60, cluster_size=2)
         self.init_ui()
 
     def browse_input_file(self):
@@ -33,13 +31,15 @@ class SetlistGeneratorWindow(QMainWindow):
 
     def generate_setlist(self):
         # Get user inputs
-        input_file_path = self.input_file_entry.text()
-        og_weight = float(self.og_weight_entry.text() or 1.0)  # Default value if no input
-        mood_weight = float(self.mood_weight_entry.text() or 1.0)  # Default value if no input
+        song_file = self.input_file_entry.text()
+        og_weight = float(self.og_weight_entry.text() or self.defaults["og_weight"])  # Default value if no input
+        mood_weight = float(self.mood_weight_entry.text() or self.defaults["mood_weight"])  # Default value if no input
         includes = self.includes_entry.text().split(",")
-        set_time = float(self.set_time_entry.text() or 60.0)  # Default value if no input
-        transition_time = float(self.transition_time_entry.text() or 5.0)  # Default value if no input
-        cluster_size = int(self.cluster_size_entry.text() or 5)  # Default value if no input
+        set_time = float(self.set_time_entry.text() or self.defaults["set_time"])  # Default value if no input
+        transition_time = float(self.transition_time_entry.text() or self.defaults["set_time"]*0.1)  # Default value if no input
+        cluster_size = int(self.cluster_size_entry.text() or self.defaults["cluster_size"])  # Default value if no input
+        #Reset random seed
+        random.seed()
         
         # Main code
         try:
@@ -49,18 +49,18 @@ class SetlistGeneratorWindow(QMainWindow):
             setlist = make_setlist(songs, target_time=set_time-transition_time, og_weight=og_weight, mood_weight=mood_weight, includes=includes)
             sorted_clusters = sort_sample_into_clusters(setlist, cluster_size=cluster_size)
             setlist_string = write_setlist_to_string(sorted_clusters)
-            setlist_generated_text.clear()  # Clear previous message
-            setlist_generated_text.append("Setlist generated!")
-            setlist_text.clear() #Update setlist text
-            setlist_text.append(setlist_string)
+            self.setlist_generated_text.clear()  # Clear previous message
+            self.setlist_generated_text.append("Setlist generated!")
         except Exception as e:
-            setlist_generated_text.clear()  # Clear previous message
-            setlist_generated_text.append(f"Error: {e}!")
+            self.setlist_generated_text.clear()  # Clear previous message
+            self.setlist_generated_text.append(f"Error: {e}!")
+            setlist_string = ""
 
         return setlist_string
 
     def update_setlist_text(self):
         setlist_string = self.generate_setlist()
+        print(setlist_string)
         self.setlist_text.clear()
         self.setlist_text.append(setlist_string)
 
@@ -101,30 +101,33 @@ class SetlistGeneratorWindow(QMainWindow):
 
         # OG Weight Entry
         self.og_weight_entry = QLineEdit()
-        self.og_weight_entry.setPlaceholderText("1.0")
+        self.og_weight_entry.setPlaceholderText(str(self.defaults["og_weight"]))
 
         # Mood Weight Entry
         self.mood_weight_entry = QLineEdit()
-        self.mood_weight_entry.setPlaceholderText("1.0")
+        self.mood_weight_entry.setPlaceholderText(str(self.defaults["mood_weight"]))
 
         # Includes Entry
         self.includes_entry = QLineEdit()
 
         # Set Time Entry
         self.set_time_entry = QLineEdit()
-        self.set_time_entry.setPlaceholderText("60.0")
+        self.set_time_entry.setPlaceholderText(str(self.defaults["set_time"]))
 
         # Transition Time Entry
         self.transition_time_entry = QLineEdit()
-        self.transition_time_entry.setPlaceholderText("5.0")
 
         # Cluster Size Entry
         self.cluster_size_entry = QLineEdit()
-        self.cluster_size_entry.setPlaceholderText("5")
+        self.cluster_size_entry.setPlaceholderText(str(self.defaults["cluster_size"]))
 
         # Run Button
         run_button = QPushButton("Run")
         run_button.clicked.connect(self.update_setlist_text)
+
+        # Setlist Generated Text
+        self.setlist_generated_text = QTextEdit()
+        self.setlist_generated_text.setReadOnly(True)
 
         # Layout for Tab 1
         tab1_layout = QVBoxLayout()
@@ -145,6 +148,7 @@ class SetlistGeneratorWindow(QMainWindow):
         tab1_layout.addWidget(QLabel("Cluster Size:"))
         tab1_layout.addWidget(self.cluster_size_entry)
         tab1_layout.addWidget(run_button)
+        tab1_layout.addWidget(self.setlist_generated_text)
         tab1.setLayout(tab1_layout)
 
         # Tab 2: Setlist
@@ -167,8 +171,3 @@ class SetlistGeneratorWindow(QMainWindow):
 
         # Show the main window
         self.show()
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = SetlistGeneratorWindow()
-    sys.exit(app.exec_())

@@ -1,4 +1,4 @@
-# Setlist Make (w/ GUI) - Makes a setlist based on the songs in a csv file, but hopefully usable to people that aren't me
+# Setlist Make (w/ GUI) - This is the main GUI class for the setlist generator.
 
 # Note: Csv file must have the following columns: Song, Artist, Key, Tuning, Time, Mood, Active, Not in that order (I don't think)
 # Ryan Peruski, 05/27/2023
@@ -12,10 +12,11 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdi
 from setlist_math import *
 
 class SetlistGeneratorWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, debug=False):
         super().__init__()
         self.output_file_path = ""
-
+        self.debug = debug
+        self.setlist_string = ""
         self.setWindowTitle("Setlist Generator")
         self.defaults = dict(og_weight=1.2, mood_weight=0.8, set_time=60, cluster_size=2)
         self.init_ui()
@@ -36,7 +37,7 @@ class SetlistGeneratorWindow(QMainWindow):
         mood_weight = float(self.mood_weight_entry.text() or self.defaults["mood_weight"])  # Default value if no input
         includes = self.includes_entry.text().split(",")
         set_time = float(self.set_time_entry.text() or self.defaults["set_time"])  # Default value if no input
-        transition_time = float(self.transition_time_entry.text() or self.defaults["set_time"]*0.1)  # Default value if no input
+        transition_time = float(self.transition_time_entry.text() or set_time*0.1)  # Default value if no input
         cluster_size = int(self.cluster_size_entry.text() or self.defaults["cluster_size"])  # Default value if no input
         #Reset random seed
         random.seed()
@@ -56,19 +57,30 @@ class SetlistGeneratorWindow(QMainWindow):
             self.setlist_generated_text.append(f"Error: {e}!")
             setlist_string = ""
 
-        return setlist_string
+        return dict(
+            setlist_string=setlist_string,
+            og_weight=og_weight,
+            mood_weight=mood_weight,
+            set_time=set_time,
+            transition_time=transition_time,
+            cluster_size=cluster_size,
+            includes=includes
+        )
 
     def update_setlist_text(self):
-        setlist_string = self.generate_setlist()
-        print(setlist_string)
+        vals = self.generate_setlist()
+        if self.debug:
+            print(f"New setlist with values:")
+            for val in reversed(vals):
+                print(f"{val}: {vals[val]}")
         self.setlist_text.clear()
-        self.setlist_text.append(setlist_string)
+        self.setlist_text.append(vals["setlist_string"])
+        self.setlist_string = vals["setlist_string"]
 
     def export_to_output_file(self):
-        setlist_string = self.generate_setlist()
         if self.output_file_path:
             with open(self.output_file_path, "w") as file:
-                file.write(setlist_string)
+                file.write(self.setlist_string)
 
     def init_ui(self):
         central_widget = QWidget()
@@ -78,10 +90,6 @@ class SetlistGeneratorWindow(QMainWindow):
         central_layout = QVBoxLayout()
         central_layout.addWidget(tab_widget)
         central_widget.setLayout(central_layout)
-
-        # Tab 1: Make Setlist
-        tab1 = QWidget()
-        tab_widget.addTab(tab1, "Make Setlist")
 
         # Input File Entry
         self.input_file_entry = QLineEdit()
@@ -98,6 +106,10 @@ class SetlistGeneratorWindow(QMainWindow):
         output_file_layout = QHBoxLayout()
         output_file_layout.addWidget(self.output_file_entry)
         output_file_layout.addWidget(browse_output_button)
+
+        # Tab 1: Make Setlist
+        tab1 = QWidget()
+        tab_widget.addTab(tab1, "Make Setlist")
 
         # OG Weight Entry
         self.og_weight_entry = QLineEdit()
@@ -133,8 +145,6 @@ class SetlistGeneratorWindow(QMainWindow):
         tab1_layout = QVBoxLayout()
         tab1_layout.addWidget(QLabel("Input File:"))
         tab1_layout.addLayout(input_file_layout)
-        tab1_layout.addWidget(QLabel("Output File:"))
-        tab1_layout.addLayout(output_file_layout)
         tab1_layout.addWidget(QLabel("OG Weight:"))
         tab1_layout.addWidget(self.og_weight_entry)
         tab1_layout.addWidget(QLabel("Mood Weight:"))
@@ -153,7 +163,7 @@ class SetlistGeneratorWindow(QMainWindow):
 
         # Tab 2: Setlist
         tab2 = QWidget()
-        tab_widget.addTab(tab2, "Setlist")
+        tab_widget.addTab(tab2, "View Setlist")
 
         # Setlist Text
         self.setlist_text = QTextEdit()
@@ -165,8 +175,10 @@ class SetlistGeneratorWindow(QMainWindow):
 
         # Layout for Tab 2
         tab2_layout = QVBoxLayout()
-        tab2_layout.addWidget(self.setlist_text)
+        tab2_layout.addWidget(QLabel("Output File:"))
+        tab2_layout.addLayout(output_file_layout)
         tab2_layout.addWidget(export_button)
+        tab2_layout.addWidget(self.setlist_text)
         tab2.setLayout(tab2_layout)
 
         # Show the main window

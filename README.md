@@ -29,11 +29,16 @@ conda activate setlistapp
 
 format_csv.py: This file is used to format the csv file that is used to generate the setlist. It is not necessary to run this file if the csv file is already formatted.
 setlist_math.py: This file contains the math part of the project. It is used to generate the setlist.
-gui.py: This file contains the gui part of the project. It is also the main file that should be run.
+gui.py: This file contains the gui part of the project. This holds the gui class.
+main.py: This is the driver file. This is the file to run the whole program.
 
 ## Usage
 
-After running the file, the only things you need to find are the input and output files. You can click the "Browse" tool for this. The input file should be a csv file with the correct format (see songs.csv for a template). The output file should be a text file that will be generated with the setlist. The "Generate Setlist" button will generate the setlist and save it to the output file.
+After running main.py, there are two tabs: "Make Setlist" and "View Setlist". I think that each tab is self-explanatory, but I will explain it anyway: The "Make Setlist" tab is used to generate a setlist, and the "View Setlist" tab is used to view the setlist that has already been generated.
+
+### Make Setlist
+
+The only thing you need is an input file. You can click the "Browse" tool for this. The input file should be a csv file with the correct format (see songs.csv for a template). The "Generate Setlist" button will generate the setlist to view in the "View Setlist" tab.
 
 The OG Weight is meant to be a weight for the original songs. The higher the weight, the more likely the song will be played. The OG Weight is a multiplier for the weight of the song.
 
@@ -46,3 +51,9 @@ The set time is the amount of time that the set should be. It is in minutes.
 The transition time is just subtracted from set time to get the actual time of the set. It is in minutes.
 
 The cluster size is the number of songs in one cluster. A cluster is defined as a group of songs with a similar mood value. It is recommended that you keep this at 2.
+
+### View Setlist
+
+You can view the setlist that has already been generated. You can also save the setlist to a file.
+
+The output file should be a text file. Output file browsing works the same as Input file browsing. Press the export button to export the setlist to a file.

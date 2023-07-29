@@ -132,25 +132,31 @@ def sort_sample_into_clusters(sample, cluster_size):
 
     return sorted_clusters
 
-def write_setlist_to_file(setlist, output_file):
+def write_setlist_string_to_file(setlist_string, output_file):
     # Open the output file in write mode
     with open(output_file, 'w') as file:
-        # Iterate over the setlist songs and write to the file
-        for i in range(len(setlist)):
-            song = setlist.iloc[i]
+        file.write(setlist_string)
 
-            # Check if the current song and the next song have the same key
-            if i < len(setlist) - 1 and song['Key'] == setlist.iloc[i+1]['Key'] and song["Tuning"] == setlist.iloc[i+1]['Tuning'] and song["Key"] != "Misc":
-                song_name = f"{song['Song']} -->"
-            else:
-                song_name = song['Song']
+def write_setlist_to_string(setlist):
+    # Iterate over the setlist songs and write to the file
+    setlist_string = []
+    for i in range(len(setlist)):
+        song = setlist.iloc[i]
 
-            # Check if the tuning is not "E Standard"
-            if song['Tuning'] != "E Standard":
-                song_name += f" ({song['Tuning']})"
+        # Check if the current song and the next song have the same key
+        if i < len(setlist) - 1 and song['Key'] == setlist.iloc[i+1]['Key'] and song["Tuning"] == setlist.iloc[i+1]['Tuning'] and song["Key"] != "Misc":
+            song_name = f"{song['Song']} -->"
+        else:
+            song_name = song['Song']
 
-            # Write the song name to the file
-            file.write(song_name + '\n')
+        # Check if the tuning is not "E Standard"
+        if song['Tuning'] != "E Standard":
+            song_name += f" ({song['Tuning']})"
+
+        # Write the song name to the string
+        setlist_string.append(song_name + '\n')
+    setlist_string = ''.join(setlist_string)
+    return setlist_string[:-1] # Remove the last newline character
 
 def show_active_songs(df):
     songs = []

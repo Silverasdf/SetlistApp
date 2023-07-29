@@ -77,14 +77,14 @@ def init_gui():
     browse_output_button.clicked.connect(lambda: browse_output_file(output_file_entry))
 
     # OG Weight
-    og_weight_label = QLabel("OG Weight (default: 1.0):")
+    og_weight_label = QLabel("OG Weight (default: 0.8):")
     og_weight_entry = QLineEdit()
-    og_weight_entry.setText("1.0")
+    og_weight_entry.setText("0.8")
 
     # Mood Weight
-    mood_weight_label = QLabel("Mood Weight (default: 1.0):")
+    mood_weight_label = QLabel("Mood Weight (default: 1.2):")
     mood_weight_entry = QLineEdit()
-    mood_weight_entry.setText("1.0")
+    mood_weight_entry.setText("1.2")
 
     # Includes
     includes_label = QLabel("Includes (comma-separated):")
@@ -96,14 +96,14 @@ def init_gui():
     set_time_entry.setText("60.0")
 
     # Transition Time
-    transition_time_label = QLabel("Transition Time (minutes, default: 5.0):")
+    transition_time_label = QLabel("Transition Time (minutes, default: 10 percent of set time):")
     transition_time_entry = QLineEdit()
-    transition_time_entry.setText("5.0")
+    transition_time_entry.setText("6.0")
 
     # Cluster Size
-    cluster_size_label = QLabel("Cluster Size (default: 5):")
+    cluster_size_label = QLabel("Cluster Size (default: 2):")
     cluster_size_entry = QLineEdit()
-    cluster_size_entry.setText("5")
+    cluster_size_entry.setText("2")
 
     # Run Button
     run_button = QPushButton("Run")

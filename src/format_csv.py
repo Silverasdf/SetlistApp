@@ -38,6 +38,15 @@ def run_program():
         songs["Active"]
     except KeyError:
         songs["Active"] = "True"
+
+    songs = songs[["Song", "Artist", "Key", "Tuning", "Time", "Mood", "Active"]]  # Reorder the columns
+    songs["Active"].fillna("True", inplace=True)  # Fill the NaN values in the "Active" column with "True"
+    songs["Mood"].fillna("0", inplace=True)  # Fill the NaN values in the "Mood" column with "0"
+    songs["Time"].fillna("1", inplace=True)  # Fill the NaN values in the "Time" column with "1"
+    songs["Tuning"].fillna("E Standard", inplace=True)  # Fill the NaN values in the "Tuning" column with "E Standard"
+    songs["Key"].fillna("Misc", inplace=True)  # Fill the NaN values in the "Key" column with "Misc"
+    songs["Artist"].fillna("Unknown Artist", inplace=True)  # Fill the NaN values in the "Artist" column with "Unknown Artist"
+    songs["Song"].fillna("Unknown Song", inplace=True)  # Fill the NaN values in the "Song" column with "Unknown Song"
     songs.to_csv(song_file, index=False)
 
     setlist_generated_text.delete("1.0", tk.END)  # Clear previous message

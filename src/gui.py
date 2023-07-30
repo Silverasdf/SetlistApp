@@ -189,5 +189,19 @@ class SetlistGeneratorWindow(QMainWindow):
         tab2_layout.addWidget(self.setlist_text)
         tab2.setLayout(tab2_layout)
 
+        # Tab 3: Song List
+        tab3 = QWidget()
+        tab_widget.addTab(tab3, "Song List")
+
+        # Setlist Text
+        self.songlist_text = QTextEdit()
+        self.songlist_text.setReadOnly(True)
+
+        #Layout for Tab 3
+        tab3_layout = QVBoxLayout()
+        tab3_layout.addWidget(QLabel("Song List"))
+        tab3_layout.addWidget(self.songlist_text)
+        tab3.setLayout(tab3_layout)
+
         # Show the main window
         self.show()

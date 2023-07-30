@@ -8,7 +8,11 @@ def run_program():
     song_file = input_file_entry.get()
 
     # Main code
-    songs = pd.read_csv(song_file)
+    try:
+        songs = pd.read_csv(song_file)
+    except Exception as e:
+        setlist_generated_text.delete("1.0", tk.END)
+        setlist_generated_text.insert(tk.END, f"Error: {e}")
     #If Column does not exist, create it and fill it with the default value
     try:
         songs["Song"]
@@ -39,18 +43,22 @@ def run_program():
     except KeyError:
         songs["Active"] = "True"
 
-    songs = songs[["Song", "Artist", "Key", "Tuning", "Time", "Mood", "Active"]]  # Reorder the columns
-    songs["Active"].fillna("True", inplace=True)  # Fill the NaN values in the "Active" column with "True"
-    songs["Mood"].fillna("0", inplace=True)  # Fill the NaN values in the "Mood" column with "0"
-    songs["Time"].fillna("1", inplace=True)  # Fill the NaN values in the "Time" column with "1"
-    songs["Tuning"].fillna("E Standard", inplace=True)  # Fill the NaN values in the "Tuning" column with "E Standard"
-    songs["Key"].fillna("Misc", inplace=True)  # Fill the NaN values in the "Key" column with "Misc"
-    songs["Artist"].fillna("Unknown Artist", inplace=True)  # Fill the NaN values in the "Artist" column with "Unknown Artist"
-    songs["Song"].fillna("Unknown Song", inplace=True)  # Fill the NaN values in the "Song" column with "Unknown Song"
-    songs.to_csv(song_file, index=False)
+    try:
+        songs = songs[["Song", "Artist", "Key", "Tuning", "Time", "Mood", "Active"]]  # Reorder the columns
+        songs["Active"].fillna("True", inplace=True)  # Fill the NaN values in the "Active" column with "True"
+        songs["Mood"].fillna("0", inplace=True)  # Fill the NaN values in the "Mood" column with "0"
+        songs["Time"].fillna("1", inplace=True)  # Fill the NaN values in the "Time" column with "1"
+        songs["Tuning"].fillna("E Standard", inplace=True)  # Fill the NaN values in the "Tuning" column with "E Standard"
+        songs["Key"].fillna("Misc", inplace=True)  # Fill the NaN values in the "Key" column with "Misc"
+        songs["Artist"].fillna("Unknown Artist", inplace=True)  # Fill the NaN values in the "Artist" column with "Unknown Artist"
+        songs["Song"].fillna("Unknown Song", inplace=True)  # Fill the NaN values in the "Song" column with "Unknown Song"
+        songs.to_csv(song_file, index=False)
 
-    setlist_generated_text.delete("1.0", tk.END)  # Clear previous message
-    setlist_generated_text.insert(tk.END, "CSV Formatted!")
+        setlist_generated_text.delete("1.0", tk.END)  # Clear previous message
+        setlist_generated_text.insert(tk.END, "CSV Formatted!")
+    except Exception as e:
+        setlist_generated_text.delete("1.0", tk.END)
+        setlist_generated_text.insert(tk.END, f"Error: {e}")
 
 # Create the GUI window
 window = tk.Tk()

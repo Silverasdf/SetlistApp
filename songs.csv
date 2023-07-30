@@ -1,9 +1,9 @@
 Song,Artist,Key,Tuning,Time,Mood,Active
-Harder to Breathe,Maroon 5,Eb,E Standard,3,6,TRUE
-All I Wanted,Paramore,D,Drop D,4,8,True
-Arctic Monkeys Medley,Arctic Monkeys,A,E Standard,7,9,True
-Around the World,RHCP,E,E Standard,4,9,False
-British Bombs,Declan McKenna,G#,E Standard,5,5,False
+Harder to Breathe,Maroon 5,Eb,E Standard,3.0,6,True
+All I Wanted,Paramore,D,Drop D,4.0,8,True
+Arctic Monkeys Medley,Arctic Monkeys,A,E Standard,7.0,9,True
+Around the World,RHCP,E,E Standard,4.0,9,False
+British Bombs,Declan McKenna,G#,E Standard,5.0,5,False
 Cigarette Daydreams,Cage the Elephant,D,E Standard,3.5,3,False
 All Along the Watchtower,Jimi Hendrix,Misc,E Standard,4.0,6,True
 All My Love,Led Zeppelin,Misc,E Standard,6.0,6,True

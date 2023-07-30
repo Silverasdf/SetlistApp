@@ -36,6 +36,8 @@ main.py: This is the driver file. This is the file to run the whole program.
 
 After running main.py, there are two tabs: "Make Setlist" and "View Setlist". I think that each tab is self-explanatory, but I will explain it anyway: The "Make Setlist" tab is used to generate a setlist, and the "View Setlist" tab is used to view the setlist that has already been generated.
 
+Note: CSV file must have the following columns: Song, Artist, Key, Tuning, Time, Mood, Active. You may use format_csv.py to format the csv file, if you wish.
+
 ### Make Setlist
 
 The only thing you need is an input file. You can click the "Browse" tool for this. The input file should be a csv file with the correct format (see songs.csv for a template). The "Generate Setlist" button will generate the setlist to view in the "View Setlist" tab.

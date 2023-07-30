@@ -1,6 +1,6 @@
 # Setlist Make (w/ GUI) - This is the main GUI class for the setlist generator.
 
-# Note: Csv file must have the following columns: Song, Artist, Key, Tuning, Time, Mood, Active, Not in that order (I don't think)
+# Note: Csv file must have the following columns: Song, Artist, Key, Tuning, Time, Mood, Active
 # Ryan Peruski, 05/27/2023
 
 import pandas as pd
@@ -42,6 +42,7 @@ class SetlistGeneratorWindow(QMainWindow):
         #Reset random seed
         random.seed()
         
+        setlist_string = ""
         # Main code
         try:
             songs = pd.read_csv(song_file)
@@ -52,10 +53,17 @@ class SetlistGeneratorWindow(QMainWindow):
             setlist_string = write_setlist_to_string(sorted_clusters)
             self.setlist_generated_text.clear()  # Clear previous message
             self.setlist_generated_text.append("Setlist generated!")
+        except FileNotFoundError:
+            self.setlist_generated_text.clear()
+            self.setlist_generated_text.append("Error: File not found!")
+        except IndexError:
+            self.setlist_generated_text.clear()
+            self.setlist_generated_text.append("Error: Your set time is too short for the songs you have selected!")
         except Exception as e:
             self.setlist_generated_text.clear()  # Clear previous message
             self.setlist_generated_text.append(f"Error: {e}!")
-            setlist_string = ""
+            self.setlist_generated_text.append(f"Make sure your CSV is formatted correctly.")
+            self.setlist_generated_text.append(f"See the README for more information.")
 
         return dict(
             setlist_string=setlist_string,

@@ -34,6 +34,12 @@ main.py: This is the driver file. This is the file to run the whole program.
 
 ## Usage
 
+See headers for each file for more specfic usage information. The main file is main.py. To run the program, just run the following command, assuming you are in the project directory:
+
+```bash
+python src/main.py
+```
+
 After running main.py, there are three tabs: "Make Setlist", "View Setlist", and "Includes/Excludes". I think that each tab is self-explanatory, but I will explain it anyway: The "Make Setlist" tab is used to generate a setlist, the "View Setlist" tab is used to view the setlist that has already been generated, and the "Includes/Excludes" tab is used to include or exclude songs from the setlist. Note that the latter two tabs are only available after an initial setlist has been generated. This is because the program needs to see the songs file you have selected.
 
 Note: CSV file must have the following columns: Song, Artist, Key, Tuning, Time, Mood, Active. You may use format_csv.py to format the csv file, if you wish.

@@ -1,5 +1,5 @@
 # Main.py - The driver file for the setlist generator.
-# usage: usage: main.py [-d] [-h]
+# usage: python main.py [-d] [-h]
 # options:
 #   -d, --debug  print debug statements
 #   -h, --help   print help

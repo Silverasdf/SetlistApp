@@ -25,13 +25,6 @@ conda env create -f environment.yml
 conda activate setlistapp
 ```
 
-## src
-
-format_csv.py: This file is used to format the csv file that is used to generate the setlist. It is not necessary to run this file if the csv file is already formatted.
-setlist_math.py: This file contains the math part of the project. It is used to generate the setlist.
-gui.py: This file contains the gui part of the project. This holds the gui class.
-main.py: This is the driver file. This is the file to run the whole program.
-
 ## Usage
 
 See headers for each file for more specfic usage information. The main file is main.py. To run the program, just run the following command, assuming you are in the project directory:
@@ -45,6 +38,16 @@ Alternatively, you can just double-click the main.py file in File Explorer.
 After running main.py, there are three tabs: "Make Setlist", "View Setlist", and "Includes/Excludes". I think that each tab is self-explanatory, but I will explain it anyway: The "Make Setlist" tab is used to generate a setlist, the "View Setlist" tab is used to view the setlist that has already been generated, and the "Includes/Excludes" tab is used to include or exclude songs from the setlist. Note that the latter two tabs are only available after an initial setlist has been generated. This is because the program needs to see the songs file you have selected.
 
 Note: CSV file must have the following columns: Song, Artist, Key, Tuning, Time, Mood, Active. You may use format_csv.py to format the csv file, if you wish.
+
+## src
+
+format_csv.py: This file is used to format the csv file that is used to generate the setlist. It is not necessary to run this file if the csv file is already formatted.
+
+setlist_math.py: This file contains the math part of the project. It is used to generate the setlist.
+
+gui.py: This file contains the gui part of the project. This holds the gui class.
+
+main.py: This is the driver file. This is the file to run the whole program.
 
 ### Make Setlist
 

@@ -8,7 +8,8 @@ import random
 import warnings
 import numpy as np
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QTextEdit, QVBoxLayout, QTabWidget, QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QTextEdit, QVBoxLayout, QTabWidget, QHBoxLayout, QListWidget, QListWidgetItem
+from PyQt5.QtGui import QColor
 from setlist_math import *
 
 class SetlistGeneratorWindow(QMainWindow):
@@ -17,6 +18,10 @@ class SetlistGeneratorWindow(QMainWindow):
         self.output_file_path = ""
         self.debug = debug
         self.setlist_string = ""
+        self.song_file = ""
+        self.available_songs = []
+        self.included_songs = []
+        self.excluded_songs = [] # List of excluded songs to show in GUI
         self.setWindowTitle("Setlist Generator")
         self.defaults = dict(og_weight=1.2, mood_weight=0.8, set_time=60, cluster_size=2)
         self.init_ui()
@@ -35,7 +40,6 @@ class SetlistGeneratorWindow(QMainWindow):
         song_file = self.input_file_entry.text()
         og_weight = float(self.og_weight_entry.text() or self.defaults["og_weight"])  # Default value if no input
         mood_weight = float(self.mood_weight_entry.text() or self.defaults["mood_weight"])  # Default value if no input
-        includes = self.includes_entry.text().split(",")
         set_time = float(self.set_time_entry.text() or self.defaults["set_time"])  # Default value if no input
         transition_time = float(self.transition_time_entry.text() or set_time*0.1)  # Default value if no input
         cluster_size = int(self.cluster_size_entry.text() or self.defaults["cluster_size"])  # Default value if no input
@@ -46,9 +50,23 @@ class SetlistGeneratorWindow(QMainWindow):
         # Main code
         try:
             songs = pd.read_csv(song_file)
-            songs = songs.query('Active == True')
+            # Song file setup for class
+            # First Time setup (whenever a new song file is selected)
+            if self.song_file != song_file: 
+                # Reset variables and then fill in excludes and available songs.
+                self.reset_vars()
+                self.available_songs = songs["Song"].tolist()
+                self.excluded_songs = songs.query('Active == False')["Song"].tolist()
+
+            
+            self.song_file = song_file
+            # Filter songs
+            for song in self.excluded_songs:
+                songs = songs.query('Song != @song')
+
+
             warnings.filterwarnings("ignore")
-            setlist = make_setlist(songs, target_time=set_time-transition_time, og_weight=og_weight, mood_weight=mood_weight, includes=includes)
+            setlist = make_setlist(songs, target_time=set_time-transition_time, og_weight=og_weight, mood_weight=mood_weight, includes=self.included_songs)
             sorted_clusters = sort_sample_into_clusters(setlist, cluster_size=cluster_size)
             setlist_string = write_setlist_to_string(sorted_clusters)
             self.setlist_generated_text.clear()  # Clear previous message
@@ -56,6 +74,7 @@ class SetlistGeneratorWindow(QMainWindow):
         except FileNotFoundError:
             self.setlist_generated_text.clear()
             self.setlist_generated_text.append("Error: File not found!")
+            self.reset_vars()
         except IndexError:
             self.setlist_generated_text.clear()
             self.setlist_generated_text.append("Error: Your set time is too short for the songs you have selected!")
@@ -64,6 +83,10 @@ class SetlistGeneratorWindow(QMainWindow):
             self.setlist_generated_text.append(f"Error: {e}!")
             self.setlist_generated_text.append(f"Make sure your CSV is formatted correctly.")
             self.setlist_generated_text.append(f"See the README for more information.")
+            self.reset_vars()
+
+        #Update tab 3
+        self.load_songs_from_csv()
 
         return dict(
             setlist_string=setlist_string,
@@ -72,9 +95,11 @@ class SetlistGeneratorWindow(QMainWindow):
             set_time=set_time,
             transition_time=transition_time,
             cluster_size=cluster_size,
-            includes=includes
+            includes = self.included_songs,
+            excludes = self.excluded_songs
         )
 
+    # Updated the setlist text box as well as displaying results for debug. "Run" button under "Make Setlist" tab
     def update_setlist_text(self):
         vals = self.generate_setlist()
         if self.debug:
@@ -85,12 +110,75 @@ class SetlistGeneratorWindow(QMainWindow):
         self.setlist_text.append(vals["setlist_string"])
         self.setlist_string = vals["setlist_string"]
 
+    # Resets all variables for a new csv file or if an error occurs
+    def reset_vars(self):
+        if self.debug:
+            print("Resetting variables")
+        self.output_file_path = ""
+        self.setlist_string = ""
+        self.song_file = ""
+        self.available_songs = []
+        self.included_songs = []
+        self.excluded_songs = []
+        self.load_songs_from_csv()
+
+    # The "Export" button on the "View Setlist" Tab
     def export_to_output_file(self):
         if self.output_file_path:
             with open(self.output_file_path, "w") as file:
                 file.write(self.setlist_string)
+                if self.debug:
+                    print(f"Exported setlist to {self.output_file_path}")
 
+    # Prints the available songs, includes, and excludes all to the "Includes/Excludes" tab
+    def load_songs_from_csv(self):
+        if self.song_file:
+            self.available_songs = list(pd.read_csv(self.song_file)["Song"])
+            # Clear the existing list items before adding new items
+            self.available_songs_list.clear()
+
+            for song in self.available_songs:
+                item = QListWidgetItem(song)
+                if song in self.included_songs:
+                    item.setForeground(QColor("green"))
+                elif song in self.excluded_songs:
+                    item.setForeground(QColor("red"))
+                self.available_songs_list.addItem(item)
+
+            if self.debug:
+                print(f"Loading songs from {self.song_file}")
+        else:
+            self.available_songs_list.clear()
+            self.available_songs_list.addItem("No file selected")
+
+    # The "Include" Button on the "Includes/Excludes" tab. Adds the selected songs to the included list
+    def include_selected_songs(self):
+        if self.song_file != "":
+            selected_songs = self.available_songs_list.selectedItems()
+            for song in selected_songs:
+                if self.debug:
+                    print(f"Including {song.text()}")
+                if song.text() in self.excluded_songs: # If the song is in the excluded list, remove it
+                    self.excluded_songs.remove(song.text())
+                self.included_songs.append(song.text())
+        self.load_songs_from_csv()
+
+    # The "Exclude" Button on the "Includes/Excludes" tab. Adds the selected songs to the excluded list
+    def exclude_selected_songs(self):
+        if self.song_file != "":
+            selected_songs = self.available_songs_list.selectedItems()
+            for song in selected_songs:
+                if self.debug:
+                    print(f"Excluding {song.text()}")
+                if song.text() in self.included_songs: # If the song is in the included list, remove it
+                    self.included_songs.remove(song.text())
+                self.excluded_songs.append(song.text())
+        self.load_songs_from_csv()
+
+    # Gets called with the constructor after all the member variables are initialized. This sets up the layout of the entire UI
     def init_ui(self):
+
+        # Window Setup
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
@@ -127,9 +215,6 @@ class SetlistGeneratorWindow(QMainWindow):
         self.mood_weight_entry = QLineEdit()
         self.mood_weight_entry.setPlaceholderText(str(self.defaults["mood_weight"]))
 
-        # Includes Entry
-        self.includes_entry = QLineEdit()
-
         # Set Time Entry
         self.set_time_entry = QLineEdit()
         self.set_time_entry.setPlaceholderText(str(self.defaults["set_time"]))
@@ -157,8 +242,6 @@ class SetlistGeneratorWindow(QMainWindow):
         tab1_layout.addWidget(self.og_weight_entry)
         tab1_layout.addWidget(QLabel("Mood Weight:"))
         tab1_layout.addWidget(self.mood_weight_entry)
-        tab1_layout.addWidget(QLabel("Includes (comma-separated):"))
-        tab1_layout.addWidget(self.includes_entry)
         tab1_layout.addWidget(QLabel("Set Time (minutes):"))
         tab1_layout.addWidget(self.set_time_entry)
         tab1_layout.addWidget(QLabel("Transition Time (minutes):"))
@@ -189,18 +272,26 @@ class SetlistGeneratorWindow(QMainWindow):
         tab2_layout.addWidget(self.setlist_text)
         tab2.setLayout(tab2_layout)
 
-        # Tab 3: Song List
+        # Tab 3: Available Songs
         tab3 = QWidget()
-        tab_widget.addTab(tab3, "Song List")
+        tab_widget.addTab(tab3, "Includes/Excludes")
 
-        # Setlist Text
-        self.songlist_text = QTextEdit()
-        self.songlist_text.setReadOnly(True)
+        # Available Songs List
+        self.available_songs_list = QListWidget()
+        self.available_songs_list.setSelectionMode(QListWidget.ExtendedSelection)  # Enable multi-selection
+        self.load_songs_from_csv() # Init the list (although no CSV file is loaded yet)
 
-        #Layout for Tab 3
+        # Include and Exclude Buttons
+        include_button = QPushButton("Include")
+        include_button.clicked.connect(self.include_selected_songs)
+        exclude_button = QPushButton("Exclude")
+        exclude_button.clicked.connect(self.exclude_selected_songs)
+
+        # Layout for Tab 3
         tab3_layout = QVBoxLayout()
-        tab3_layout.addWidget(QLabel("Song List"))
-        tab3_layout.addWidget(self.songlist_text)
+        tab3_layout.addWidget(self.available_songs_list)
+        tab3_layout.addWidget(include_button)
+        tab3_layout.addWidget(exclude_button)
         tab3.setLayout(tab3_layout)
 
         # Show the main window

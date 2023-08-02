@@ -7,7 +7,7 @@ import pandas as pd
 import random
 import warnings
 import numpy as np
-import sys
+import sys, os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QTextEdit, QVBoxLayout, QTabWidget, QHBoxLayout, QListWidget, QListWidgetItem
 from PyQt5.QtGui import QColor
 from setlist_math import *
@@ -129,6 +129,8 @@ class SetlistGeneratorWindow(QMainWindow):
                 file.write(self.setlist_string)
                 if self.debug:
                     print(f"Exported setlist to {self.output_file_path}")
+            self.message_box_export.clear()
+            self.message_box_export.setText(self.message_box_export.text() + "Exported to " + os.path.basename(self.output_file_path) + "!\n")
 
     # Prints the available songs, includes, and excludes all to the "Includes/Excludes" tab
     def load_songs_from_csv(self):
@@ -201,6 +203,8 @@ class SetlistGeneratorWindow(QMainWindow):
             else:
                 df["Active"][i] = "True"
         df.to_csv(self.song_file, index=False)
+        self.message_box_modify.clear()
+        self.message_box_modify.setText(self.message_box_modify.text() + "Modified " + os.path.basename(self.song_file) + "!\n")
         self.load_songs_from_csv()
 
     # Gets called with the constructor after all the member variables are initialized. This sets up the layout of the entire UI
@@ -292,12 +296,17 @@ class SetlistGeneratorWindow(QMainWindow):
         export_button = QPushButton("Export to Output File")
         export_button.clicked.connect(self.export_to_output_file)
 
+        # Feedback Text
+        self.message_box_export = QLineEdit()
+        self.message_box_export.setReadOnly(True)  # Set the text box to read-only
+
         # Layout for Tab 2
         tab2_layout = QVBoxLayout()
         tab2_layout.addWidget(QLabel("Output File:"))
         tab2_layout.addLayout(output_file_layout)
         tab2_layout.addWidget(export_button)
         tab2_layout.addWidget(self.setlist_text)
+        tab2_layout.addWidget(self.message_box_export)
         tab2.setLayout(tab2_layout)
 
         # Tab 3: Available Songs
@@ -323,6 +332,10 @@ class SetlistGeneratorWindow(QMainWindow):
         modify_button = QPushButton("Modify")
         modify_button.clicked.connect(self.modify_song_csv)
 
+        # Feedback Text
+        self.message_box_modify = QLineEdit()
+        self.message_box_modify.setReadOnly(True)  # Set the text box to read-only
+
         # Layout for Tab 3
         tab3_layout = QVBoxLayout()
         tab3_layout.addWidget(self.available_songs_list)
@@ -330,6 +343,7 @@ class SetlistGeneratorWindow(QMainWindow):
         tab3_layout.addWidget(exclude_button)
         tab3_layout.addWidget(remove_button)
         tab3_layout.addWidget(modify_button)
+        tab3_layout.addWidget(self.message_box_modify)
         tab3.setLayout(tab3_layout)
 
         # Show the main window

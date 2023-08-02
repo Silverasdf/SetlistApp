@@ -46,7 +46,7 @@ def run_program():
     try:
         songs = songs[["Song", "Artist", "Key", "Tuning", "Time", "Mood", "Active"]]  # Reorder the columns
         songs["Active"].fillna("True", inplace=True)  # Fill the NaN values in the "Active" column with "True"
-        songs["Mood"].fillna("0", inplace=True)  # Fill the NaN values in the "Mood" column with "0"
+        songs["Mood"].fillna("5", inplace=True)  # Fill the NaN values in the "Mood" column with "0"
         songs["Time"].fillna("1", inplace=True)  # Fill the NaN values in the "Time" column with "1"
         songs["Tuning"].fillna("E Standard", inplace=True)  # Fill the NaN values in the "Tuning" column with "E Standard"
         songs["Key"].fillna("Misc", inplace=True)  # Fill the NaN values in the "Key" column with "Misc"

@@ -71,7 +71,7 @@ The output file should be a text file. Output file browsing works the same as In
 
 ### Includes/Excludes
 
-You can include or exclude songs from the setlist. To do this, just select the song from the list in the tab song name in the text box and press the "Include" button. To remove a song from the list, just click on the song and press the "Exclude" button. Includes are green and excludes are red. Songs that are not active are automatically excluded from the start.
+You can include or exclude songs from the setlist. To do this, just select the song from the list in the tab song name in the text box and press the "Include" button. To remove a song from the list, just click on the song and press the "Exclude" button. Includes are green and excludes are red. Songs that are not active are automatically excluded from the start. The "Remove" Button just removes the song from either the Includes and Excludes list. The "Modify" button saves the changes to the song list csv file. This means that all green and black songs are set to Active while the red songs are set to Inactive.
 
 Note: In order to load a file, make sure to select a file to include and click the "Run" button under the "Make Setlist" tab.
 

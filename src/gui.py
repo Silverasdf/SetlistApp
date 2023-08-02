@@ -174,6 +174,34 @@ class SetlistGeneratorWindow(QMainWindow):
                     self.included_songs.remove(song.text())
                 self.excluded_songs.append(song.text())
         self.load_songs_from_csv()
+    
+    def remove_selected_songs(self):
+        if self.song_file != "":
+            selected_songs = self.available_songs_list.selectedItems()
+            for song in selected_songs:
+                if self.debug:
+                    print(f"Removing {song.text()}")
+                if song.text() in self.included_songs: # If the song is in the included list, remove it
+                    self.included_songs.remove(song.text())
+                if song.text() in self.excluded_songs:
+                    self.excluded_songs.remove(song.text())
+        self.load_songs_from_csv()
+
+
+    # This is the "Modify" Button on the "Includes/Excludes" tab. This takes all of the Includes and Excludes and changes the mood value in the csv file
+    def modify_song_csv(self):
+        df = pd.read_csv(self.song_file)
+        if self.debug:
+            print(f"Modifying {self.song_file}")
+        for i in range(df.shape[0]):
+            if df["Song"][i] in self.excluded_songs:
+                if self.debug:
+                    print(f"Excluding {df['Song'][i]}")
+                df["Active"][i] = "False"
+            else:
+                df["Active"][i] = "True"
+        df.to_csv(self.song_file, index=False)
+        self.load_songs_from_csv()
 
     # Gets called with the constructor after all the member variables are initialized. This sets up the layout of the entire UI
     def init_ui(self):
@@ -287,11 +315,21 @@ class SetlistGeneratorWindow(QMainWindow):
         exclude_button = QPushButton("Exclude")
         exclude_button.clicked.connect(self.exclude_selected_songs)
 
+        #Remove Button
+        remove_button = QPushButton("Remove")
+        remove_button.clicked.connect(self.remove_selected_songs)
+
+        # Modify Button
+        modify_button = QPushButton("Modify")
+        modify_button.clicked.connect(self.modify_song_csv)
+
         # Layout for Tab 3
         tab3_layout = QVBoxLayout()
         tab3_layout.addWidget(self.available_songs_list)
         tab3_layout.addWidget(include_button)
         tab3_layout.addWidget(exclude_button)
+        tab3_layout.addWidget(remove_button)
+        tab3_layout.addWidget(modify_button)
         tab3.setLayout(tab3_layout)
 
         # Show the main window

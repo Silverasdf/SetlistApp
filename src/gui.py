@@ -222,6 +222,7 @@ class SetlistGeneratorWindow(QMainWindow):
         # Input File Entry
         self.input_file_entry = QLineEdit()
         browse_input_button = QPushButton("Browse")
+        browse_input_button.setToolTip("Click to browse for input CSV file")
         browse_input_button.clicked.connect(self.browse_input_file)
         input_file_layout = QHBoxLayout()
         input_file_layout.addWidget(self.input_file_entry)
@@ -231,6 +232,7 @@ class SetlistGeneratorWindow(QMainWindow):
         self.output_file_entry = QLineEdit()
         browse_output_button = QPushButton("Browse")
         browse_output_button.clicked.connect(self.browse_output_file)
+        browse_output_button.setToolTip("Click to find a place for the output file")
         output_file_layout = QHBoxLayout()
         output_file_layout.addWidget(self.output_file_entry)
         output_file_layout.addWidget(browse_output_button)
@@ -260,6 +262,7 @@ class SetlistGeneratorWindow(QMainWindow):
 
         # Run Button
         run_button = QPushButton("Run")
+        run_button.setToolTip("Generate Setlist")
         run_button.clicked.connect(self.update_setlist_text)
 
         # Setlist Generated Text
@@ -294,6 +297,7 @@ class SetlistGeneratorWindow(QMainWindow):
 
         # Export Button
         export_button = QPushButton("Export to Output File")
+        export_button.setToolTip("Export to Selected Output File")
         export_button.clicked.connect(self.export_to_output_file)
 
         # Feedback Text
@@ -320,16 +324,20 @@ class SetlistGeneratorWindow(QMainWindow):
 
         # Include and Exclude Buttons
         include_button = QPushButton("Include")
+        include_button.setToolTip("Click to include selected songs in the setlist")
         include_button.clicked.connect(self.include_selected_songs)
         exclude_button = QPushButton("Exclude")
+        exclude_button.setToolTip("Click to exclude selected songs from the setlist")
         exclude_button.clicked.connect(self.exclude_selected_songs)
 
         #Remove Button
         remove_button = QPushButton("Remove")
+        remove_button.setToolTip("Click to remove selected songs from the includes/excludes list")
         remove_button.clicked.connect(self.remove_selected_songs)
 
         # Modify Button
         modify_button = QPushButton("Modify")
+        modify_button.setToolTip("Click to modify the input CSV file according to the current includes/excludes list. \nExcludes are set to inactive while everything else is set to active.")
         modify_button.clicked.connect(self.modify_song_csv)
 
         # Feedback Text

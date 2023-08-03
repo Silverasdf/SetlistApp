@@ -158,6 +158,14 @@ def write_setlist_to_string(setlist):
     setlist_string = ''.join(setlist_string)
     return setlist_string[:-1] # Remove the last newline character
 
+def write_setlist_to_list(setlist):
+    # Iterate over the setlist songs and write to the file
+    setlist_list = []
+    for i in range(len(setlist)):
+        song = setlist.iloc[i]
+        setlist_list.append(song["Song"])
+    return setlist_list
+
 def show_active_songs(df):
     songs = []
     df = df[df['Active'] == True]

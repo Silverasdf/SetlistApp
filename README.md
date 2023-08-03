@@ -67,6 +67,8 @@ The Cluster Size is the number of songs in one cluster. A cluster is defined as 
 
 You can view the setlist that has already been generated. You can also save the setlist to a file.
 
+You can switch between list mode and text mode for the setlist. More changes will be made to the list mode in the future.
+
 The output file should be a text file. Output file browsing works the same as Input file browsing. Press the export button to export the setlist to a file.
 
 ### Includes/Excludes

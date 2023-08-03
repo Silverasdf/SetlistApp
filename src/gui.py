@@ -6,8 +6,7 @@
 import pandas as pd
 import random
 import warnings
-import numpy as np
-import sys, os
+import os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QTextEdit, QVBoxLayout, QTabWidget, QHBoxLayout, QListWidget, QListWidgetItem
 from PyQt5.QtGui import QColor
 from setlist_math import *
@@ -17,7 +16,7 @@ class SetlistGeneratorWindow(QMainWindow):
         super().__init__()
         self.output_file_path = ""
         self.debug = debug
-        self.setlist_string = ""
+        self.setlist = pd.DataFrame()
         self.song_file = ""
         self.available_songs = []
         self.included_songs = []
@@ -45,8 +44,7 @@ class SetlistGeneratorWindow(QMainWindow):
         cluster_size = int(self.cluster_size_entry.text() or self.defaults["cluster_size"])  # Default value if no input
         #Reset random seed
         random.seed()
-        
-        setlist_string = ""
+
         # Main code
         try:
             songs = pd.read_csv(song_file)
@@ -68,7 +66,6 @@ class SetlistGeneratorWindow(QMainWindow):
             warnings.filterwarnings("ignore")
             setlist = make_setlist(songs, target_time=set_time-transition_time, og_weight=og_weight, mood_weight=mood_weight, includes=self.included_songs)
             sorted_clusters = sort_sample_into_clusters(setlist, cluster_size=cluster_size)
-            setlist_string = write_setlist_to_string(sorted_clusters)
             self.setlist_generated_text.clear()  # Clear previous message
             self.setlist_generated_text.append("Setlist generated!")
         except FileNotFoundError:
@@ -89,7 +86,7 @@ class SetlistGeneratorWindow(QMainWindow):
         self.load_songs_from_csv()
 
         return dict(
-            setlist_string=setlist_string,
+            setlist=sorted_clusters,
             og_weight=og_weight,
             mood_weight=mood_weight,
             set_time=set_time,
@@ -99,24 +96,54 @@ class SetlistGeneratorWindow(QMainWindow):
             excludes = self.excluded_songs
         )
 
-    # Updated the setlist text box as well as displaying results for debug. "Run" button under "Make Setlist" tab
-    def update_setlist_text(self):
+    # Updated the setlist text box and list as well as displaying results for debug. "Run" button under "Make Setlist" tab
+    def update_setlist(self):
         vals = self.generate_setlist()
         if self.debug:
             print(f"New setlist with values:")
             for val in reversed(vals):
-                print(f"{val}: {vals[val]}")
-        self.setlist_text.clear()
-        self.setlist_text.append(vals["setlist_string"])
-        self.setlist_string = vals["setlist_string"]
+                if val != "setlist":
+                    print(f"{val}: {vals[val]}")
+            print("Setlist:")
+            for i, row in vals["setlist"].iterrows():
+                print(row["Song"])
+        self.setlist = vals["setlist"]
+        setlist_text = write_setlist_to_string(vals["setlist"])
+
+        self.setlist_text_box.clear()
+        self.setlist_text_box.append(setlist_text)
+    
+    # "Text Mode" button after "Run" button under "Make Setlist" tab
+    def show_setlist_text(self):
+        self.setlist_list_box.setVisible(False)
+        self.setlist_text_box.setVisible(True)
+        self.setlist_text_box.clear()
+        setlist_text = write_setlist_to_string(self.setlist)
+        self.setlist_text_box.append(setlist_text)
+        self.message_box_export.clear()
+        self.message_box_export.setText(self.message_box_export.text() + "Switched to text mode.")
+        if self.debug:
+            print("Switched to text mode.")
+
+    # "List Mode" button after "Run" button under "Make Setlist" tab
+    def show_setlist_list(self):
+        self.setlist_text_box.setVisible(False)
+        self.setlist_list_box.setVisible(True)
+        self.setlist_list_box.clear()
+        for i, row in self.setlist.iterrows():
+            self.setlist_list_box.addItem(row["Song"])
+        self.message_box_export.clear()
+        self.message_box_export.setText(self.message_box_export.text() + "Switched to list mode.")
+        if self.debug:
+            print("Switched to list mode.")
 
     # Resets all variables for a new csv file or if an error occurs
     def reset_vars(self):
         if self.debug:
             print("Resetting variables")
         self.output_file_path = ""
-        self.setlist_string = ""
         self.song_file = ""
+        self.setlist = pd.DataFrame()
         self.available_songs = []
         self.included_songs = []
         self.excluded_songs = []
@@ -124,13 +151,24 @@ class SetlistGeneratorWindow(QMainWindow):
 
     # The "Export" button on the "View Setlist" Tab
     def export_to_output_file(self):
-        if self.output_file_path:
+        setlist_text = write_setlist_to_string(self.setlist)
+        if self.output_file_path and not self.setlist.empty: # Setlist must be created and output file must be selected
             with open(self.output_file_path, "w") as file:
-                file.write(self.setlist_string)
+                file.write(setlist_text)
                 if self.debug:
                     print(f"Exported setlist to {self.output_file_path}")
             self.message_box_export.clear()
             self.message_box_export.setText(self.message_box_export.text() + "Exported to " + os.path.basename(self.output_file_path) + "!\n")
+        else: # Error handling
+            self.message_box_export.clear()
+            if self.output_file_path:
+                self.message_box_export.setText(self.message_box_export.text() + "Error: No setlist generated!\n")
+                if self.debug:
+                    print(f"Error: No setlist generated!")
+            else:
+                self.message_box_export.setText(self.message_box_export.text() + "Error: No file selected!\n")
+                if self.debug:
+                    print(f"Error: No file selected!")
 
     # Prints the available songs, includes, and excludes all to the "Includes/Excludes" tab
     def load_songs_from_csv(self):
@@ -177,6 +215,7 @@ class SetlistGeneratorWindow(QMainWindow):
                 self.excluded_songs.append(song.text())
         self.load_songs_from_csv()
     
+    # The "Remove" Button on the "Includes/Excludes" tab. Removes the selected songs from either the included and excluded list
     def remove_selected_songs(self):
         if self.song_file != "":
             selected_songs = self.available_songs_list.selectedItems()
@@ -263,7 +302,7 @@ class SetlistGeneratorWindow(QMainWindow):
         # Run Button
         run_button = QPushButton("Run")
         run_button.setToolTip("Generate Setlist")
-        run_button.clicked.connect(self.update_setlist_text)
+        run_button.clicked.connect(self.update_setlist)
 
         # Setlist Generated Text
         self.setlist_generated_text = QTextEdit()
@@ -291,9 +330,15 @@ class SetlistGeneratorWindow(QMainWindow):
         tab2 = QWidget()
         tab_widget.addTab(tab2, "View Setlist")
 
-        # Setlist Text
-        self.setlist_text = QTextEdit()
-        self.setlist_text.setReadOnly(True)
+        # Setlist Text Box
+        self.setlist_text_box = QTextEdit()
+        self.setlist_text_box.setReadOnly(True)
+        self.setlist_text_box.setStyleSheet("border: 1px solid black")
+
+        # Setlist List
+        self.setlist_list_box = QListWidget()
+        self.setlist_list_box.setVisible(False)  # Hide the list initially
+        self.setlist_list_box.setSelectionMode(QListWidget.ExtendedSelection)  # Enable multi-selection
 
         # Export Button
         export_button = QPushButton("Export to Output File")
@@ -304,12 +349,27 @@ class SetlistGeneratorWindow(QMainWindow):
         self.message_box_export = QLineEdit()
         self.message_box_export.setReadOnly(True)  # Set the text box to read-only
 
+        # Buttons for "Text" and "List" views
+        text_button = QPushButton("Text Mode")
+        text_button.setToolTip("Show setlist as text")
+        text_button.clicked.connect(self.show_setlist_text)
+        list_button = QPushButton("List Mode")
+        list_button.setToolTip("Show setlist as list")
+        list_button.clicked.connect(self.show_setlist_list)
+
+        # Horizontal Layout for Text and List Buttons
+        buttons_layout = QHBoxLayout()
+        buttons_layout.addWidget(text_button)
+        buttons_layout.addWidget(list_button)
+
         # Layout for Tab 2
         tab2_layout = QVBoxLayout()
         tab2_layout.addWidget(QLabel("Output File:"))
         tab2_layout.addLayout(output_file_layout)
         tab2_layout.addWidget(export_button)
-        tab2_layout.addWidget(self.setlist_text)
+        tab2_layout.addLayout(buttons_layout)
+        tab2_layout.addWidget(self.setlist_text_box)
+        tab2_layout.addWidget(self.setlist_list_box)
         tab2_layout.addWidget(self.message_box_export)
         tab2.setLayout(tab2_layout)
 

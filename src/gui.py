@@ -68,6 +68,7 @@ class SetlistGeneratorWindow(QMainWindow):
             sorted_clusters = sort_sample_into_clusters(setlist, cluster_size=cluster_size)
             self.setlist_generated_text.clear()  # Clear previous message
             self.setlist_generated_text.append("Setlist generated!")
+            self.setlist_generated_text.append(f"Total set time: {setlist['Time'].sum():.2f} minutes")
         except FileNotFoundError:
             self.setlist_generated_text.clear()
             self.setlist_generated_text.append("Error: File not found!")
@@ -201,6 +202,19 @@ class SetlistGeneratorWindow(QMainWindow):
                 if song.text() in self.excluded_songs: # If the song is in the excluded list, remove it
                     self.excluded_songs.remove(song.text())
                 self.included_songs.append(song.text())
+        # Error handling and printing to the message box
+            self.message_box_modify.clear()
+            if len(selected_songs) == 0:
+                self.message_box_modify.setText(self.message_box_modify.text() + "Error: No songs selected!\n")
+            elif len(selected_songs) == 1:
+                self.message_box_modify.setText(self.message_box_modify.text() + "Included " + str(len(selected_songs)) + " song.\n")
+            else:
+                self.message_box_modify.setText(self.message_box_modify.text() + "Included " + str(len(selected_songs)) + " songs.\n")
+        else:
+            self.message_box_modify.clear()
+            self.message_box_modify.setText(self.message_box_modify.text() + "Error: No file selected!\n")
+        
+        #Reload
         self.load_songs_from_csv()
 
     # The "Exclude" Button on the "Includes/Excludes" tab. Adds the selected songs to the excluded list
@@ -213,6 +227,17 @@ class SetlistGeneratorWindow(QMainWindow):
                 if song.text() in self.included_songs: # If the song is in the included list, remove it
                     self.included_songs.remove(song.text())
                 self.excluded_songs.append(song.text())
+            
+            self.message_box_modify.clear()
+            if len(selected_songs) == 0:
+                self.message_box_modify.setText(self.message_box_modify.text() + "Error: No songs selected!\n")
+            elif len(selected_songs) == 1:
+                self.message_box_modify.setText(self.message_box_modify.text() + "Excluded 1 song.\n")
+            else:
+                self.message_box_modify.setText(self.message_box_modify.text() + "Excluded " + str(len(selected_songs)) + " songs.\n")
+        else:
+            self.message_box_modify.clear()
+            self.message_box_modify.setText(self.message_box_modify.text() + "Error: No file selected!\n")
         self.load_songs_from_csv()
     
     # The "Remove" Button on the "Includes/Excludes" tab. Removes the selected songs from either the included and excluded list
@@ -226,6 +251,17 @@ class SetlistGeneratorWindow(QMainWindow):
                     self.included_songs.remove(song.text())
                 if song.text() in self.excluded_songs:
                     self.excluded_songs.remove(song.text())
+            self.message_box_modify.clear()
+            if len(selected_songs) == 0:
+                self.message_box_modify.setText(self.message_box_modify.text() + "Error: No songs selected!\n")
+            elif len(selected_songs) == 1:
+                self.message_box_modify.setText(self.message_box_modify.text() + "Removed 1 song.\n")
+            else:
+                self.message_box_modify.setText(self.message_box_modify.text() + "Removed " + str(len(selected_songs)) + " songs.\n")
+        else:
+            self.message_box_modify.clear()
+            self.message_box_modify.setText(self.message_box_modify.text() + "Error: No file selected!\n")
+            
         self.load_songs_from_csv()
 
 
@@ -390,6 +426,11 @@ class SetlistGeneratorWindow(QMainWindow):
         exclude_button.setToolTip("Click to exclude selected songs from the setlist")
         exclude_button.clicked.connect(self.exclude_selected_songs)
 
+        # Horizontal Layout for Include and Exclude Buttons
+        buttons_layout = QHBoxLayout()
+        buttons_layout.addWidget(include_button)
+        buttons_layout.addWidget(exclude_button)
+
         #Remove Button
         remove_button = QPushButton("Remove")
         remove_button.setToolTip("Click to remove selected songs from the includes/excludes list")
@@ -407,8 +448,7 @@ class SetlistGeneratorWindow(QMainWindow):
         # Layout for Tab 3
         tab3_layout = QVBoxLayout()
         tab3_layout.addWidget(self.available_songs_list)
-        tab3_layout.addWidget(include_button)
-        tab3_layout.addWidget(exclude_button)
+        tab3_layout.addLayout(buttons_layout)
         tab3_layout.addWidget(remove_button)
         tab3_layout.addWidget(modify_button)
         tab3_layout.addWidget(self.message_box_modify)
